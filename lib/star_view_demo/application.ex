@@ -1,0 +1,42 @@
+defmodule StarViewDemo.Application do
+  # See https://hexdocs.pm/elixir/Application.html
+  # for more information on OTP Applications
+  @moduledoc false
+
+  use Application
+
+  @impl true
+  def start(_type, _args) do
+    children = [
+      StarViewDemoWeb.Telemetry,
+      StarViewDemo.Repo,
+      {Ecto.Migrator,
+       repos: Application.fetch_env!(:star_view_demo, :ecto_repos), skip: skip_migrations?()},
+      {DNSCluster, query: Application.get_env(:star_view_demo, :dns_cluster_query) || :ignore},
+      {Phoenix.PubSub, name: StarViewDemo.PubSub},
+      # Start a worker by calling: StarViewDemo.Worker.start_link(arg)
+      # {StarViewDemo.Worker, arg},
+      # Start to serve requests, typically the last entry
+      StarViewDemoWeb.Endpoint,
+      {AshAuthentication.Supervisor, [otp_app: :star_view_demo]}
+    ]
+
+    # See https://hexdocs.pm/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: StarViewDemo.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  @impl true
+  def config_change(changed, _new, removed) do
+    StarViewDemoWeb.Endpoint.config_change(changed, removed)
+    :ok
+  end
+
+  defp skip_migrations?() do
+    # By default, sqlite migrations are run when using a release
+    System.get_env("RELEASE_NAME") == nil
+  end
+end
