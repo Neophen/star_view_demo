@@ -41,6 +41,7 @@ defmodule StarViewDemo.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:star_view, "~> 0.3"},
       {:picosat_elixir, "~> 0.2"},
       {:sourceror, "~> 1.8", only: [:dev, :test]},
       {:usage_rules, "~> 1.0", only: [:dev]},
